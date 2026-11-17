@@ -1,0 +1,8 @@
+# 运行环境：Python 3.11+（本机实测 3.14.6 可跑）
+# 安装：pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+flask==3.1.3
+python-pptx==1.0.2
+jieba==0.42.1
+python-dotenv==1.2.4
+requests==2.34.2
