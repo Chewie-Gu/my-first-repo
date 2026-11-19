@@ -47,19 +47,24 @@ def ref_pages(ref: str) -> set[str]:
 
 
 def hit_stats(fn, conn, questions):
-    top1 = top3 = 0
+    """同时算两套口径：严格只认主答案页（参考里的第一个页码），宽松认整个可接受页集合。"""
+    strict1 = top1 = top3 = 0
     missed = []
     for q in questions:
-        refs = ref_pages(q[2])
+        chapter, pages = q[2].split("-", 1)
+        refs = {f"{chapter}-{p}" for p in pages.split("/")}
+        primary = f"{chapter}-{pages.split('/')[0]}"
         hits = fn(conn, q[1], 3)
         locs = [f"{h['course']}-{h['page']}" for h in hits]
+        if locs and locs[0] == primary:
+            strict1 += 1
         if locs and locs[0] in refs:
             top1 += 1
         if refs & set(locs):
             top3 += 1
         else:
             missed.append(q[0])
-    return top1, top3, missed
+    return strict1, top1, top3, missed
 
 
 def main() -> None:
@@ -69,13 +74,15 @@ def main() -> None:
 
     questions = list(csv.reader((ROOT / "docs" / "检索粗测-30题.csv").open(encoding="utf-8")))[1:]
 
-    t1a, t3a, miss_a = hit_stats(search, conn, questions)
-    t1b, t3b, miss_b = hit_stats(search_improved, conn, questions)
+    t1a, l1a, t3a, miss_a = hit_stats(search, conn, questions)
+    t1b, l1b, t3b, miss_b = hit_stats(search_improved, conn, questions)
 
     print(f"文本块：{len(chunks)}   题目：{len(questions)}")
-    print(f"{'':12}{'top1':>8}{'top3':>8}{'未召回':>10}")
-    print(f"{'基线 FTS5':12}{t1a:>7}/30{t3a:>7}/30{len(miss_a):>9} 题")
-    print(f"{'改进版':12}{t1b:>7}/30{t3b:>7}/30{len(miss_b):>9} 题")
+    print("口径：严格 = top1 必须是主答案页；宽松 = top1 落在可接受页集合内")
+    print(f"{'':12}{'严格top1':>10}{'宽松top1':>10}{'top3':>8}{'未召回':>8}")
+    print(f"{'基线 FTS5':12}{t1a:>10}/30{l1a:>8}/30{t3a:>6}/30{len(miss_a):>7} 题")
+    print(f"{'改进版':12}{t1b:>10}/30{l1b:>8}/30{t3b:>6}/30{len(miss_b):>7} 题")
+    print(f"增益：严格 +{t1b - t1a}，宽松 +{l1b - l1a}，top3 +{t3b - t3a}")
     print(f"\n基线未召回：{','.join(miss_a) or '无'}")
     print(f"改进后未召回：{','.join(miss_b) or '无'}")
 
