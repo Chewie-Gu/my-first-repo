@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 学习助手｜计算机程序设计</title>
+  <style>
+    :root {
+      --ink: #14213d;
+      --muted: #66758f;
+      --blue: #2457c5;
+      --blue-soft: #eaf1ff;
+      --line: #dce5f2;
+      --surface: #ffffff;
+      --bg: #f3f6fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      background:
+        linear-gradient(rgba(42, 82, 145, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(42, 82, 145, .035) 1px, transparent 1px),
+        var(--bg);
+      background-size: 42px 42px;
+    }
+    .page { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 54px 0 42px; }
+    .topline { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:26px; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:7px 13px; border:1px solid #c7d8f5; border-radius:99px; color:#244b91; background:#edf4ff; font-size:12px; letter-spacing:.04em; }
+    .status { color:#61718b; font-size:12px; }
+    h1 { margin:0; font-size:clamp(30px, 5vw, 44px); letter-spacing:-.04em; }
+    .intro { margin:12px 0 30px; color:#50617c; line-height:1.8; }
+    .intro strong { color:#1e438d; }
+    .panel { background:rgba(255,255,255,.94); border:1px solid var(--line); border-radius:18px; box-shadow:0 12px 36px rgba(31,58,100,.07); padding:24px; }
+    .panel-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+    .panel-head h2 { margin:0; font-size:17px; }
+    .small { color:var(--muted); font-size:12px; }
+    textarea {
+      display:block; width:100%; min-height:132px; resize:vertical; padding:16px;
+      border:1px solid #ccd8e9; border-radius:12px; outline:none; color:var(--ink);
+      background:#fbfdff; font:inherit; line-height:1.7; transition:border-color .2s, box-shadow .2s;
+    }
+    textarea:focus { border-color:#6d91dc; box-shadow:0 0 0 3px rgba(54,104,202,.12); }
+    .actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px; }
+    .hint { color:#8491a5; font-size:12px; }
+    button {
+      border:0; border-radius:10px; padding:11px 22px; color:white; background:var(--blue);
+      font:inherit; font-weight:600; cursor:pointer; box-shadow:0 5px 12px rgba(36,87,197,.18);
+      transition:transform .15s, background .15s;
+    }
+    button:hover { background:#1948ad; transform:translateY(-1px); }
+    button:active { transform:translateY(0); }
+    button:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+    .answer { margin-top:20px; min-height:138px; border:1px dashed #cbd8eb; border-radius:14px; padding:18px; background:#f9fbff; }
+    .answer.empty { display:grid; place-items:center; color:#8794a8; text-align:center; }
+    .answer-title { display:flex; align-items:center; gap:9px; margin-bottom:12px; font-weight:700; }
+    .dot { width:8px; height:8px; border-radius:50%; background:#2b65ce; }
+    .answer p { margin:0; line-height:1.85; white-space:pre-wrap; }
+    .citation { display:inline-block; margin-top:14px; padding:5px 9px; border-radius:7px; background:var(--blue-soft); color:#31579c; font-size:12px; }
+    .examples { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+    .example { border:1px solid #d9e3f2; border-radius:99px; padding:7px 11px; color:#536783; background:white; font-size:12px; cursor:pointer; }
+    .example:hover { border-color:#91ace0; color:#214b9c; }
+    footer { margin-top:24px; color:#9aa5b5; font-size:11px; text-align:center; }
+    @media (max-width:600px) {
+      .page { padding-top:30px; }
+      .panel { padding:18px; }
+      .actions { align-items:flex-end; }
+      .hint { max-width:58%; line-height:1.5; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topline">
+      <span class="tag">● PROJ-005&nbsp; AI 工具</span>
+      <span class="status">W1 · 前端交互原型</span>
+    </div>
+
+    <h1>AI 学习助手</h1>
+    <p class="intro">只服务一门课：<strong>《计算机程序设计》</strong>。输入一个学习问题，先体验提问与回答流程。</p>
+
+    <section class="panel" aria-labelledby="question-title">
+      <div class="panel-head">
+        <h2 id="question-title">向学习助手提问</h2>
+        <span class="small">演示版 · 模拟数据</span>
+      </div>
+      <form id="question-form">
+        <textarea id="question-input" placeholder="例如：什么是变量？变量在程序中有什么作用？" required></textarea>
+        <div class="actions">
+          <span class="hint">当前为前端原型，回答由本地模拟数据生成。</span>
+          <button id="ask-button" type="submit">提问 ↗</button>
+        </div>
+      </form>
+
+      <div id="answer-area" class="answer empty" aria-live="polite">
+        <div>✦<br>你的回答会显示在这里<br><span class="small">输入问题并点击「提问」开始体验</span></div>
+      </div>
+
+      <div class="examples" aria-label="示例问题">
+        <button class="example" type="button" data-question="什么是变量？">什么是变量？</button>
+        <button class="example" type="button" data-question="循环结构有什么作用？">循环结构有什么作用？</button>
+        <button class="example" type="button" data-question="if 和 if-else 有什么区别？">if 和 if-else 有什么区别？</button>
+      </div>
+    </section>
+    <footer>AI 学习助手 · 华东理工大学《计算机程序设计》课程专用</footer>
+  </main>
+
+  <script>
+    const form = document.getElementById("question-form");
+    const input = document.getElementById("question-input");
+    const answerArea = document.getElementById("answer-area");
+    const askButton = document.getElementById("ask-button");
+
+    function makeMockAnswer(question) {
+      const q = question.toLowerCase();
+      if (q.includes("变量")) {
+        return "变量可以理解为程序中用于存放数据的一个“命名空间”。程序运行时，可以通过变量名读取或修改其中保存的值。使用变量能让数据管理更清晰，也便于重复使用和修改。";
+      }
+      if (q.includes("循环")) {
+        return "循环结构用于让一段代码重复执行。通常需要关注三个部分：循环初始条件、继续循环的判断条件，以及每轮执行后对条件变量的更新。要特别检查循环条件，避免出现无限循环。";
+      }
+      if (q.includes("if")) {
+        return "if 用于在条件成立时执行指定代码；if-else 则提供两个分支：条件成立时执行 if 部分，否则执行 else 部分。可以根据是否需要处理“条件不成立”的情况来选择。";
+      }
+      return "收到你的问题：“" + question + "”。这是 W1 前端演示用的模拟回答：建议先明确题目涉及的概念，再梳理相关语法或执行步骤，最后尝试用一个小例子验证理解。后续接入课程资料检索与真实问答接口后，这里将显示基于教材内容生成的答案和引用页码。";
+    }
+
+    function showAnswer(question) {
+      answerArea.classList.remove("empty");
+      answerArea.innerHTML = "";
+      const title = document.createElement("div");
+      title.className = "answer-title";
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      title.append(dot, document.createTextNode("模拟回答"));
+      const paragraph = document.createElement("p");
+      paragraph.textContent = makeMockAnswer(question);
+      const citation = document.createElement("span");
+      citation.className = "citation";
+      citation.textContent = "引用页码：待接入教材检索后显示";
+      answerArea.append(title, paragraph, citation);
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const question = input.value.trim();
+      if (!question) {
+        input.focus();
+        answerArea.classList.add("empty");
+        answerArea.textContent = "请先输入一个问题，再点击提问。";
+        return;
+      }
+      askButton.disabled = true;
+      askButton.textContent = "生成中…";
+      window.setTimeout(() => {
+        showAnswer(question);
+        askButton.disabled = false;
+        askButton.textContent = "提问 ↗";
+      }, 250);
+    });
+
+    document.querySelectorAll(".example").forEach((button) => {
+      button.addEventListener("click", () => {
+        input.value = button.dataset.question;
+        input.focus();
+      });
+    });
+  </script>
+</body>
+</html>
